@@ -47,7 +47,7 @@ void yuv420::overlay(const bitmap_image& image, const unsigned int offset_x, con
 		}
 
 		const BYTE* U_source_offset = image.data_ptr() + image.pixel_count();
-		const BYTE* V_source_offset = image.data_ptr() + image.pixel_count() + (image.pixel_count() / 4);
+		const BYTE* V_source_offset = U_source_offset + (image.pixel_count() / 4);
 
 		for (int frameN = 0; frameN < number_frames_; frameN++)
 		{
@@ -63,13 +63,11 @@ void yuv420::overlay(const bitmap_image& image, const unsigned int offset_x, con
 
 				if (line % 2 == 0)
 				{
-					const BYTE* U_source = U_source_offset + (line * image.width() / 4);
-					BYTE* U_dest = U_dest_offset + (offset_y + line) * width_ / 4 + offset_x / 2;
-					std::memcpy(U_dest, U_source, image.width() / 2);
+					const unsigned int UV_source_step = line * image.width() / 4;
+					const unsigned int UV_dest_step = (offset_y + line) * width_ / 4 + offset_x / 2;
 
-					const BYTE* V_source = V_source_offset + (line * image.width() / 4);
-					BYTE* V_dest = V_dest_offset + (offset_y + line) * width_ / 4 + offset_x / 2;
-					std::memcpy(V_dest, V_source, image.width() / 2);
+					std::memcpy(U_dest_offset + UV_dest_step, U_source_offset + UV_source_step, image.width() / 2);
+					std::memcpy(V_dest_offset + UV_dest_step, V_source_offset + UV_source_step, image.width() / 2);
 				}
 			}
 		}
