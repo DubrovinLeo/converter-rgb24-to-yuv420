@@ -61,14 +61,16 @@ void yuv420::overlay(const bitmap_image& image, const unsigned int offset_x, con
 				BYTE* Y_dest = frame + ((offset_y + line) * width_ + offset_x);
 				std::memcpy(Y_dest, Y_source, image.width());
 
-				//  U and V components is wrong
-				/*const BYTE* U_source = U_source_offset + (line * image.width() / 4);
-				BYTE* U_dest = U_dest_offset + (offset_y + line) * width_ / 4;
-				std::memcpy(U_dest, U_source, image.width() / 4);
+				if (line % 2 == 0)
+				{
+					const BYTE* U_source = U_source_offset + (line * image.width() / 4);
+					BYTE* U_dest = U_dest_offset + (offset_y + line) * width_ / 4 + offset_x / 2;
+					std::memcpy(U_dest, U_source, image.width() / 2);
 
-				const BYTE* V_source = V_source_offset + (line * image.width() / 4);
-				BYTE* V_dest = V_dest_offset + (offset_y + line) * width_ / 4;
-				std::memcpy(V_dest, V_source, image.width() / 4);*/
+					const BYTE* V_source = V_source_offset + (line * image.width() / 4);
+					BYTE* V_dest = V_dest_offset + (offset_y + line) * width_ / 4 + offset_x / 2;
+					std::memcpy(V_dest, V_source, image.width() / 2);
+				}
 			}
 		}
 	}
