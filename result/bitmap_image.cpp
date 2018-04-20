@@ -80,7 +80,7 @@ void bitmap_image::load_bitmap()
 
 		width_ = bih_.width;
 		height_ = bih_.height;
-		bytes_per_pixel_ = bih_.bit_count >> 3;
+		bytes_per_pixel_ = bih_.bit_count >> 3; // must be 3
 		padding_ = (4 - ((3 * width_) % 4)) % 4;
 		row_increment_ = width_ * bytes_per_pixel_;
 		data_.resize(height_ * row_increment_);
@@ -125,56 +125,77 @@ void bitmap_image::bgr_to_yuv420()
 	bfh_.clear();
 	color_model_ = yuv_420_model;
 
-	std::vector<BYTE> y_component;
-	y_component.reserve(pixel_count());
-	std::vector<BYTE> u_component;
-	u_component.reserve(pixel_count() / 4);
-	std::vector<BYTE> v_component;
-	v_component.reserve(pixel_count() / 4);
+	const unsigned int number_threads = std::thread::hardware_concurrency();
+	unsigned int thread_length = height_ / number_threads;
 
-	for (size_t y = 0; y < height_; ++y)
+	if(thread_length % 2 != 0)
 	{
-		for (size_t x = 0; x < (width_ * 3); x += 3)
-		{
-			const int b_addrass = y * width_ * 3 + x;
-			int r = data_[b_addrass + 2];
-			int g = data_[b_addrass + 1];
-			int b = data_[b_addrass];
+		thread_length--;
+	}
+	std::vector<unsigned int> rows_per_thread(number_threads, thread_length);
+	if(thread_length * number_threads != height_)
+	{
+		rows_per_thread[rows_per_thread.size() - 1] += height_ - thread_length * number_threads;
+	}
 
-			y_component.push_back( ((66 * r + 129 * g + 25 * b) >> 8) + 16 );
+	std::vector<BYTE> component(pixel_count() * 3 / 2);
+
+	std::thread* threads = new std::thread[number_threads];
+
+	unsigned int offset_h = 0;
+	for (std::vector<int>::size_type i = 0; i < number_threads; ++i)
+	{
+		threads[i] = std::thread(&bitmap_image::compute_bgr_to_yuv420, this, std::ref(component), offset_h, rows_per_thread[i]);
+		offset_h += rows_per_thread[i];
+	}
+
+	for (std::vector<int>::size_type i = 0; i < number_threads; ++i)
+	{
+		if (threads[i].joinable()) {
+			threads[i].join();
 		}
 	}
 
-	for (size_t y = 0; y < height_; y += 2)
-	{
-		for (size_t x = 0; x < (width_ * 3); x += 3)
-		{
-			const int b_addrass = y * width_ * 3 + x;
-			int r = data_[b_addrass + 2];
-			int g = data_[b_addrass + 1];
-			int b = data_[b_addrass];
-
-			if (x % 2 == 0)
-			{
-				u_component.push_back( ((-38 * r - 74 * g + 112 * b) >> 8) + 128 );
-			}
-			else
-			{
-				v_component.push_back( ((112 * r - 94 * g - 18 * b) >> 8) + 128 );
-			}
-		}
-	}
-
-	data_.resize(width_ * height_ * 3 / 2);
-	data_.insert(data_.begin(), y_component.begin(), y_component.end());
-	data_.insert(data_.begin() + pixel_count(), u_component.begin(), u_component.end());
-	data_.insert(data_.begin() + pixel_count() + pixel_count() / 4, v_component.begin(), v_component.end());
-	
-	y_component.clear();
-	u_component.clear();
-	v_component.clear();
+	data_ = component;
+	component.clear();
+	delete[] threads;
 }
 
+void bitmap_image::compute_bgr_to_yuv420(std::vector<BYTE> &data, unsigned int offset_h, unsigned int length_h)
+{
+	mutex_.lock();
+	std::cout << "Offset height: " << offset_h << " Length: " << length_h << std::endl;
+	mutex_.unlock();
+
+	unsigned int y_offset = offset_h * width_;
+	unsigned int u_offset = pixel_count() + y_offset / 4;
+	unsigned int v_offset = u_offset + pixel_count() / 4;
+
+	for (size_t y = offset_h; y < offset_h + length_h; ++y)
+	{
+		for (size_t x = 0; x < width_; ++x)
+		{
+			const int b_addrass = bytes_per_pixel_ * (y * width_ + x);
+			const int r = data_[b_addrass + 2];
+			const int g = data_[b_addrass + 1];
+			const int b = data_[b_addrass];
+
+			data[y_offset++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
+
+			if (y % 2 == 0)
+			{
+				if (x % 2 == 0)
+				{
+					data[u_offset++] = ((-38 * r - 74 * g + 112 * b) >> 8) + 128;
+				}
+				else
+				{
+					data[v_offset++] = ((112 * r - 94 * g - 18 * b) >> 8) + 128;
+				}
+			}
+		}
+	}
+}
 
 void bitmap_image::save(const std::string& file_name) const
 {
@@ -222,7 +243,7 @@ void bitmap_image::save(const std::string& file_name) const
 	
 }
 
-std::size_t bitmap_image::file_size(const std::string& file_name) const
+std::size_t bitmap_image::file_size(const std::string& file_name)
 {
 	std::ifstream file(file_name.c_str(), std::ios::in | std::ios::binary);
 	if (!file) return 0;

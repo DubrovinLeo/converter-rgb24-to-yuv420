@@ -35,6 +35,7 @@ private:
 	color_models color_model_;
 	std::vector<BYTE> data_;
 	unsigned int padding_;
+	std::mutex mutex_;
 
 	struct bitmap_file_header
 	{
@@ -147,7 +148,9 @@ private:
 	template <typename T>
 	static void write_to_stream(std::ofstream& stream, const T& t);
 
-	std::size_t file_size(const std::string& file_name) const;
+	static std::size_t file_size(const std::string& file_name);
+
+	void compute_bgr_to_yuv420(std::vector<BYTE> &data, unsigned int offset_h, unsigned int length_h);
 };
 
 #endif // BITMAP_IMAGE_H

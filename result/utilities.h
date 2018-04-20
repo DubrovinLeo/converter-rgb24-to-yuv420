@@ -8,5 +8,7 @@
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
+#include <thread>
+#include <mutex>
 
 typedef unsigned char BYTE;

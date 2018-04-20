@@ -1,9 +1,0 @@
-﻿  yuv420.cpp
-c:\users\lenz0\desktop\test_case\result\result\yuv420.cpp(1): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-c:\users\lenz0\desktop\test_case\result\result\yuv420.cpp(20): warning C4018: '<': signed/unsigned mismatch
-c:\users\lenz0\desktop\test_case\result\result\yuv420.cpp(52): warning C4018: '<': signed/unsigned mismatch
-c:\users\lenz0\desktop\test_case\result\result\yuv420.cpp(58): warning C4018: '<': signed/unsigned mismatch
-c:\users\lenz0\desktop\test_case\result\result\yuv420.cpp(94): warning C4018: '<': signed/unsigned mismatch
-  main.cpp
-  Generating Code...
-  result.vcxproj -> C:\Users\Lenz0\Desktop\test_case\result\Debug\result.exe

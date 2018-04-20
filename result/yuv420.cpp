@@ -1,6 +1,6 @@
 #include "yuv420.h";
 
-yuv420::yuv420(const std::string& filename, unsigned width, unsigned height, unsigned frames):
+yuv420::yuv420(const std::string& filename, unsigned int width, unsigned int height, unsigned int frames):
 	width_(width),
 	height_(height),
 	number_frames_(frames)
@@ -32,7 +32,7 @@ yuv420::yuv420(const std::string& filename, unsigned width, unsigned height, uns
 	}
 }
 
-void yuv420::overlay(const bitmap_image& image, const uint32_t offset_x, const uint32_t offset_y)
+void yuv420::overlay(const bitmap_image& image, const unsigned int offset_x, const unsigned int offset_y)
 {
 	try
 	{
@@ -62,13 +62,13 @@ void yuv420::overlay(const bitmap_image& image, const uint32_t offset_x, const u
 				std::memcpy(Y_dest, Y_source, image.width());
 
 				//  U and V components is wrong
-				const BYTE* U_source = U_source_offset + (line * image.width() / 4);
+				/*const BYTE* U_source = U_source_offset + (line * image.width() / 4);
 				BYTE* U_dest = U_dest_offset + (offset_y + line) * width_ / 4;
 				std::memcpy(U_dest, U_source, image.width() / 4);
 
 				const BYTE* V_source = V_source_offset + (line * image.width() / 4);
 				BYTE* V_dest = V_dest_offset + (offset_y + line) * width_ / 4;
-				std::memcpy(V_dest, V_source, image.width() / 4);
+				std::memcpy(V_dest, V_source, image.width() / 4);*/
 			}
 		}
 	}
@@ -81,7 +81,6 @@ void yuv420::overlay(const bitmap_image& image, const uint32_t offset_x, const u
 
 void yuv420::save(const std::string& filename) const
 {
-
 	std::ofstream stream;
 	try
 	{
