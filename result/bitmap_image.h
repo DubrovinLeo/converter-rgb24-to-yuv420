@@ -152,6 +152,10 @@ private:
 
 	void compute_bgr_to_yuv420(std::vector<BYTE> &data, unsigned int offset_h, unsigned int length_h);
 	std::tuple<BYTE, BYTE, BYTE> get_rgb(unsigned int offset) const;
+	BYTE compute_Y_component(std::tuple<BYTE, BYTE, BYTE> rgb) const;
+	BYTE compute_U_component(std::tuple<BYTE, BYTE, BYTE> rgb) const;
+	BYTE compute_V_component(std::tuple<BYTE, BYTE, BYTE> rgb) const;
+
 };
 
 #endif // BITMAP_IMAGE_H

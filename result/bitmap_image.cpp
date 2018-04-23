@@ -177,18 +177,18 @@ void bitmap_image::compute_bgr_to_yuv420(std::vector<BYTE> &data, unsigned int o
 		{
 			std::tuple<BYTE, BYTE, BYTE> rgb = get_rgb(bytes_per_pixel_ * (h * width_ + w));
 		
-			data[y_offset] = ((66 * std::get<0>(rgb) + 129 * std::get<1>(rgb) + 25 * std::get<2>(rgb)) >> 8) + 16;
-			data[u_offset++] = ((-38 * std::get<0>(rgb) - 74 * std::get<1>(rgb) + 112 * std::get<2>(rgb)) >> 8) + 128;
+			data[y_offset] = compute_Y_component(rgb);
+			data[u_offset++] = compute_U_component(rgb);
 
 			rgb = get_rgb(bytes_per_pixel_ * (h * width_ + w + 1));
-			data[y_offset + 1] = ((66 * std::get<0>(rgb) + 129 * std::get<1>(rgb) + 25 * std::get<2>(rgb)) >> 8) + 16;
-			data[v_offset++] = ((112 * std::get<0>(rgb) - 94 * std::get<1>(rgb) - 18 * std::get<2>(rgb)) >> 8) + 128;
+			data[y_offset + 1] = compute_Y_component(rgb);
+			data[v_offset++] = compute_V_component(rgb);
 
 			rgb = get_rgb(bytes_per_pixel_ * ((h + 1) * width_ + w));
-			data[y_offset + width_] = ((66 * std::get<0>(rgb) + 129 * std::get<1>(rgb) + 25 * std::get<2>(rgb)) >> 8) + 16;
+			data[y_offset + width_] = compute_Y_component(rgb);
 			
 			rgb = get_rgb(bytes_per_pixel_ * ((h + 1) * width_ + w + 1));
-			data[y_offset + width_ + 1] = ((66 * std::get<0>(rgb) + 129 * std::get<1>(rgb) + 25 * std::get<2>(rgb)) >> 8) + 16;
+			data[y_offset + width_ + 1] = compute_Y_component(rgb);
 			
 			y_offset += 2;
 		}
@@ -196,11 +196,25 @@ void bitmap_image::compute_bgr_to_yuv420(std::vector<BYTE> &data, unsigned int o
 	}
 }
 
-
 std::tuple<BYTE, BYTE, BYTE> bitmap_image::get_rgb(unsigned int offset) const
 {
 	return std::make_tuple(data_[offset + 2], data_[offset + 1], data_[offset]);
 }
+
+BYTE bitmap_image::compute_Y_component(std::tuple<BYTE, BYTE, BYTE> rgb) const
+{
+	return ((66 * std::get<0>(rgb) + 129 * std::get<1>(rgb) + 25 * std::get<2>(rgb)) >> 8) + 16;
+}
+BYTE bitmap_image::compute_U_component(std::tuple<BYTE, BYTE, BYTE> rgb) const
+{
+	return ((-38 * std::get<0>(rgb) - 74 * std::get<1>(rgb) + 112 * std::get<2>(rgb)) >> 8) + 128;
+}
+BYTE bitmap_image::compute_V_component(std::tuple<BYTE, BYTE, BYTE> rgb) const
+{
+	return ((112 * std::get<0>(rgb) - 94 * std::get<1>(rgb) - 18 * std::get<2>(rgb)) >> 8) + 128;
+}
+
+
 
 void bitmap_image::save(const std::string& file_name) const
 {
