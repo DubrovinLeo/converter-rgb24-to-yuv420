@@ -151,6 +151,7 @@ private:
 	static std::size_t file_size(const std::string& file_name);
 
 	void compute_bgr_to_yuv420(std::vector<BYTE> &data, unsigned int offset_h, unsigned int length_h);
+	std::tuple<BYTE, BYTE, BYTE> get_rgb(unsigned int offset) const;
 };
 
 #endif // BITMAP_IMAGE_H
